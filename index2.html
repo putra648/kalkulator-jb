@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JumpBall Calc AI Pro - Kalkulator Super & Asisten Matematika Basket</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        hoop: {
+                            50: '#fff7ed',
+                            100: '#ffedd5',
+                            500: '#f97316',
+                            600: '#ea580c',
+                            700: '#c2410c',
+                            800: '#9a3412',
+                            900: '#7c2d12',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0c0a09;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(249, 115, 22, 0.15) 0%, transparent 50%),
+                linear-gradient(to bottom, rgba(28, 25, 23, 0.95), rgba(12, 10, 9, 1));
+        }
+        
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(28, 25, 23, 0.8);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(234, 88, 12, 0.6);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(249, 115, 22, 1);
+        }
+
+        .glass-panel {
+            background: rgba(28, 25, 23, 0.75);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(249, 115, 22, 0.15);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        .court-border {
+            border: 2px solid rgba(249, 115, 22, 0.3);
+            position: relative;
+        }
+
+        .btn-calc {
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+        .btn-calc:active {
+            transform: scale(0.93);
+        }
+
+        /* Pulsing animation for Jump Ball AI */
+        @keyframes hoop-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(249, 115, 22, 0.4); }
+            50% { box-shadow: 0 0 28px rgba(249, 115, 22, 0.85); }
+        }
+        .ai-glow {
+            animation: hoop-glow 2.2s infinite;
+        }
+
+        .bounce-anim {
+            animation: bounce 1.8s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+    </style>
+</head>
+<body class="text-stone-100 min-h-screen flex flex-col overflow-x-hidden">
+
+    <!-- App Header -->
+    <header class="border-b border-stone-800 bg-stone-900/90 backdrop-filter backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-600 via-amber-500 to-yellow-500 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-orange-500/30 bounce-anim">
+                    <i class="fa-solid fa-basketball"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-orange-400 via-amber-300 to-yellow-400">
+                        JUMP BALL <span class="text-xs px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/40 ml-1">CALC AI</span>
+                    </h1>
+                    <p class="text-xs text-stone-400">Kalkulator Multi-Fungsi & Asisten Fisika Basket</p>
+                </div>
+            </div>
+
+            <!-- Quick Action Right Bar -->
+            <div class="flex items-center space-x-2 sm:space-x-4">
+                <button onclick="toggleHistoryModal()" class="px-3 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs sm:text-sm font-medium border border-stone-700 transition flex items-center space-x-2">
+                    <i class="fa-solid fa-clock-rotate-left text-orange-400"></i>
+                    <span class="hidden sm:inline">Riwayat</span>
+                </button>
+                <button onclick="switchTab('ai-solver')" class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 hover:from-orange-600 hover:to-amber-600 text-stone-950 text-xs sm:text-sm font-black shadow-md ai-glow flex items-center space-x-2 transition">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>Tanya AI Basket</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container Layout -->
+    <div class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Sidebar Navigation -->
+        <aside class="lg:col-span-3 flex flex-col space-y-1">
+            <div class="text-xs font-bold text-orange-500 uppercase tracking-widest px-3 mb-2 flex items-center justify-between">
+                <span>Modul Perhitungan</span>
+                <i class="fa-solid fa-trophy text-amber-500 text-xs"></i>
+            </div>
+            <nav id="sidebar-nav" class="space-y-1 overflow-y-auto max-h-[calc(100vh-140px)] pr-1">
+                <button onclick="switchTab('standard')" data-tab="standard" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-sm font-semibold transition bg-orange-600/20 text-orange-400 border border-orange-500/30">
+                    <i class="fa-solid fa-calculator w-5 text-center"></i>
+                    <span>1 & 2. Dasar & Sains</span>
+                </button>
+                <button onclick="switchTab('jumpball')" data-tab="jumpball" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-sm font-medium transition text-stone-400 hover:bg-stone-800 hover:text-stone-200">
+                    <i class="fa-solid fa-basketball w-5 text-center text-orange-500"></i>
+                    <span class="font-bold text-orange-300">3. Jump Ball & Fisika Basket</span>
+                </button>
+                <button onclick="switchTab('hoopstats')" data-tab="hoopstats" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-sm font-medium transition text-stone-400 hover:bg-stone-800 hover:text-stone-200">
+                    <i class="fa-solid fa-chart-simple w-5 text-center text-amber-400"></i>
+                    <span>4. Statistik Basket (TS%, PER)</span>
+                </button>
+                <button onclick="switchTab('math')" data-tab="math" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-sm font-medium transition text-stone-400 hover:bg-stone-800 hover:text-stone-200">
+                    <i class="fa-solid fa-square-root-variable w-5 text-center"></i>
+                    <span>5. Matematika & Aljabar</span>
+                </button>
+                <button onclick="switchTab('finance')" data-tab="finance" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-sm font-medium transition text-stone-400 hover:bg-stone-800 hover:text-stone-200">
+                    <i class="fa-solid fa-coins w-5 text-center"></i>
+                    <span>6. Keuangan & Tiket Match</span>
+                </button>
+                <button onclick="switchTab('converter')" data-tab="converter" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-sm font-medium transition text-stone-400 hover:bg-stone-800 hover:text-stone-200">
+                    <i class="fa-solid fa-ruler-combined w-5 text-center"></i>
+                    <span>7. Konversi Satuan</span>
+                </button>
+                <button onclick="switchTab('programmer')" data-tab="programmer" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-sm font-medium transition text-stone-400 hover:bg-stone-800 hover:text-stone-200">
+                    <i class="fa-solid fa-code w-5 text-center"></i>
+                    <span>8. Pemrograman & RPL</span>
+                </button>
+                <button onclick="switchTab('geometry')" data-tab="geometry" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-sm font-medium transition text-stone-400 hover:bg-stone-800 hover:text-stone-200">
+                    <i class="fa-solid fa-shapes w-5 text-center"></i>
+                    <span>9. Geometri Lapangan</span>
+                </button>
+                <button onclick="switchTab('datetime')" data-tab="datetime" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-sm font-medium transition text-stone-400 hover:bg-stone-800 hover:text-stone-200">
+                    <i class="fa-solid fa-stopwatch w-5 text-center"></i>
+                    <span>10. Tanggal & Timer Game</span>
+                </button>
+                <button onclick="switchTab('daily')" data-tab="daily" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-sm font-medium transition text-stone-400 hover:bg-stone-800 hover:text-stone-200">
+                    <i class="fa-solid fa-users w-5 text-center"></i>
+                    <span>11. Split Bill Tim & BBM</span>
+                </button>
+                <button onclick="switchTab('ai-solver')" data-tab="ai-solver" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-sm font-medium transition text-orange-400 hover:bg-orange-950/30 border border-orange-500/30">
+                    <i class="fa-solid fa-robot w-5 text-center text-orange-400"></i>
+                    <span class="font-bold">12. Fitur AI Math & Hoops</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="lg:col-span-9 flex flex-col space-y-4">
+
+            <!-- TAB 1 & 2: KALKULATOR DASAR & SAINS BASKET -->
+            <section id="tab-standard" class="tab-content flex flex-col space-y-4">
+                <div class="glass-panel p-4 sm:p-6 rounded-2xl flex flex-col space-y-4 court-border">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-stone-800 text-orange-400 border border-stone-700">JumpBall Mode</span>
+                            <button id="deg-rad-btn" onclick="toggleAngleUnit()" class="text-xs font-bold px-3 py-1 rounded-full bg-orange-600/30 text-orange-300 border border-orange-500/40">DEG</button>
+                        </div>
+                        <div class="text-xs text-stone-400 flex items-center space-x-2">
+                            <i class="fa-solid fa-keyboard text-orange-400"></i>
+                            <span class="hidden sm:inline">Keyboard Support Active</span>
+                        </div>
+                    </div>
+
+                    <!-- Calculator Screen Display -->
+                    <div class="bg-stone-950 border border-orange-500/30 rounded-xl p-4 flex flex-col items-end justify-between min-h-[120px] shadow-inner relative overflow-hidden">
+                        <div class="absolute -right-6 -bottom-6 text-stone-800/40 text-8xl font-black pointer-events-none select-none">
+                            <i class="fa-solid fa-basketball"></i>
+                        </div>
+                        <div id="calc-history-line" class="text-stone-400 text-sm font-mono tracking-wide h-6 overflow-x-auto w-full text-right whitespace-nowrap z-10"></div>
+                        <div id="calc-display" class="text-orange-400 text-3xl sm:text-4xl font-extrabold font-mono tracking-wider w-full text-right overflow-x-auto whitespace-nowrap py-1 z-10">0</div>
+                    </div>
+
+                    <!-- Calculator Keypad -->
+                    <div class="grid grid-cols-5 sm:grid-cols-8 gap-2">
+                        <!-- Scientific Buttons -->
+                        <button onclick="calcInput('sin(')" class="btn-calc p-3 text-xs sm:text-sm font-semibold rounded-xl bg-stone-800 hover:bg-stone-700 text-orange-400">sin</button>
+                        <button onclick="calcInput('cos(')" class="btn-calc p-3 text-xs sm:text-sm font-semibold rounded-xl bg-stone-800 hover:bg-stone-700 text-orange-400">cos</button>
+                        <button onclick="calcInput('tan(')" class="btn-calc p-3 text-xs sm:text-sm font-semibold rounded-xl bg-stone-800 hover:bg-stone-700 text-orange-400">tan</button>
+                        <button onclick="calcInput('asin(')" class="btn-calc p-3 text-xs sm:text-sm font-semibold rounded-xl bg-stone-800 hover:bg-stone-700 text-orange-400 hidden sm:block">sin⁻¹</button>
+                        <button onclick="calcInput('acos(')" class="btn-calc p-3 text-xs sm:text-sm font-semibold rounded-xl bg-stone-800 hover:bg-stone-700 text-orange-400 hidden sm:block">cos⁻¹</button>
+                        <button onclick="calcInput('atan(')" class="btn-calc p-3 text-xs sm:text-sm font-semibold rounded-xl bg-stone-800 hover:bg-stone-700 text-orange-400 hidden sm:block">tan⁻¹</button>
+                        <button onclick="calcInput('log(')" class="btn-calc p-3 text-xs sm:text-sm font-semibold rounded-xl bg-stone-800 hover:bg-stone-700 text-amber-300">log</button>
+                        <button onclick="calcInput('ln(')" class="btn-calc p-3 text-xs sm:text-sm font-semibold rounded-xl bg-stone-800 hover:bg-stone-700 text-amber-300">ln</button>
+
+                        <button onclick="calcInput('sinh(')" class="btn-calc p-3 text-xs sm:text-sm font-semibold rounded-xl bg-stone-800 hover:bg-stone-700 text-orange-400 hidden sm:block">sinh</button>
+                        <button onclick="calcInput('cosh(')" class="btn-calc p-3 text-xs sm:text-sm font-semibold rounded-xl bg-stone-800 hover:bg-stone-700 text-orange-400 hidden sm:block">cosh</button>
+                        <button onclick="calcInput('tanh(')" class="btn-calc p-3 text-xs sm:text-sm font-semibold rounded-xl bg-stone-800 hover:bg-stone-700 text-orange-400 hidden sm:block">tanh</button>
+                        <button onclick="calcInput('^2')" class="btn-calc p-3 text-xs sm:text-sm font-semibold rounded-xl bg-stone-800 hover:bg-stone-700 text-amber-300">x²</button>
+                        <button onclick="calcInput('^3')" class="btn-calc p-3 text-xs sm:text-sm font-semibold rounded-xl bg-stone-800 hover:bg-stone-700 text-amber-300">x³</button>
+                        <button onclick="calcInput('^')" class="btn-calc p-3 text-xs sm:text-sm font-semibold rounded-xl bg-stone-800 hover:bg-stone-700 text-amber-300">xⁿ</button>
+                        <button onclick="calcInput('sqrt(')" class="btn-calc p-3 text-xs sm:text-sm font-semibold rounded-xl bg-stone-800 hover:bg-stone-700 text-amber-300">√</button>
+                        <button onclick="calcInput('fact(')" class="btn-calc p-3 text-xs sm:text-sm font-semibold rounded-xl bg-stone-800 hover:bg-stone-700 text-amber-300">n!</button>
+
+                        <button onclick="calcInput('π')" class="btn-calc p-3 text-xs sm:text-sm font-semibold rounded-xl bg-stone-800 hover:bg-stone-700 text-yellow-400">π</button>
+                        <button onclick="calcInput('e')" class="btn-calc p-3 text-xs sm:text-sm font-semibold rounded-xl bg-stone-800 hover:bg-stone-700 text-yellow-400">e</button>
+                        <button onclick="calcInput('nCr(')" class="btn-calc p-3 text-xs sm:text-sm font-semibold rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 hidden sm:block">nCr</button>
+                        <button onclick="calcInput('nPr(')" class="btn-calc p-3 text-xs sm:text-sm font-semibold rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 hidden sm:block">nPr</button>
+                        <button onclick="calcAction('AC')" class="btn-calc p-3 text-xs sm:text-sm font-bold rounded-xl bg-rose-900/80 hover:bg-rose-800 text-rose-100 border border-rose-700/50">AC</button>
+                        <button onclick="calcAction('CE')" class="btn-calc p-3 text-xs sm:text-sm font-bold rounded-xl bg-amber-900/80 hover:bg-amber-800 text-amber-100 border border-amber-700/50">CE</button>
+                        <button onclick="calcAction('DEL')" class="btn-calc p-3 text-xs sm:text-sm font-bold rounded-xl bg-stone-800 hover:bg-stone-700 text-orange-400"><i class="fa-solid fa-backspace"></i></button>
+                        <button onclick="calcInput('/')" class="btn-calc p-3 text-sm font-bold rounded-xl bg-orange-900/40 hover:bg-orange-800 text-orange-300 border border-orange-700/50">÷</button>
+
+                        <!-- Standard Numpad Row 1 -->
+                        <button onclick="calcInput('(')" class="btn-calc p-3 text-sm font-semibold rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300">(</button>
+                        <button onclick="calcInput(')')" class="btn-calc p-3 text-sm font-semibold rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300">)</button>
+                        <button onclick="calcInput('7')" class="btn-calc p-3 text-base font-bold rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-100 border border-stone-800">7</button>
+                        <button onclick="calcInput('8')" class="btn-calc p-3 text-base font-bold rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-100 border border-stone-800">8</button>
+                        <button onclick="calcInput('9')" class="btn-calc p-3 text-base font-bold rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-100 border border-stone-800">9</button>
+                        <button onclick="calcInput('*')" class="btn-calc p-3 text-sm font-bold rounded-xl bg-orange-900/40 hover:bg-orange-800 text-orange-300 border border-orange-700/50">×</button>
+                        <button onclick="calcInput('%')" class="btn-calc p-3 text-sm font-semibold rounded-xl bg-stone-800 hover:bg-stone-700 text-amber-300">%</button>
+                        <button onclick="calcInput('mod')" class="btn-calc p-3 text-xs font-semibold rounded-xl bg-stone-800 hover:bg-stone-700 text-amber-300">mod</button>
+
+                        <!-- Numpad Row 2 -->
+                        <button onclick="calcInput('10^')" class="btn-calc p-3 text-xs sm:text-sm font-semibold rounded-xl bg-stone-800 hover:bg-stone-700 text-amber-300 hidden sm:block">10ⁿ</button>
+                        <button onclick="calcInput('e^')" class="btn-calc p-3 text-xs sm:text-sm font-semibold rounded-xl bg-stone-800 hover:bg-stone-700 text-amber-300 hidden sm:block">eⁿ</button>
+                        <button onclick="calcInput('4')" class="btn-calc p-3 text-base font-bold rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-100 border border-stone-800">4</button>
+                        <button onclick="calcInput('5')" class="btn-calc p-3 text-base font-bold rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-100 border border-stone-800">5</button>
+                        <button onclick="calcInput('6')" class="btn-calc p-3 text-base font-bold rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-100 border border-stone-800">6</button>
+                        <button onclick="calcInput('-')" class="btn-calc p-3 text-sm font-bold rounded-xl bg-orange-900/40 hover:bg-orange-800 text-orange-300 border border-orange-700/50">-</button>
+                        <button onclick="copyCalcResult()" class="btn-calc p-3 text-xs font-semibold rounded-xl bg-stone-800 hover:bg-stone-700 text-yellow-400" title="Copy Hasil"><i class="fa-regular fa-copy"></i> Copy</button>
+                        <button onclick="calcAction('ANS')" class="btn-calc p-3 text-xs font-semibold rounded-xl bg-stone-800 hover:bg-stone-700 text-orange-400">ANS</button>
+
+                        <!-- Numpad Row 3 -->
+                        <button onclick="calcInput('1')" class="btn-calc p-3 text-base font-bold rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-100 border border-stone-800 sm:col-start-3">1</button>
+                        <button onclick="calcInput('2')" class="btn-calc p-3 text-base font-bold rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-100 border border-stone-800">2</button>
+                        <button onclick="calcInput('3')" class="btn-calc p-3 text-base font-bold rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-100 border border-stone-800">3</button>
+                        <button onclick="calcInput('+')" class="btn-calc p-3 text-sm font-bold rounded-xl bg-orange-900/40 hover:bg-orange-800 text-orange-300 border border-orange-700/50">+</button>
+                        <button onclick="calcAction('TOGGLE_SIGN')" class="btn-calc p-3 text-sm font-semibold rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300">+/-</button>
+
+                        <!-- Numpad Row 4 -->
+                        <button onclick="calcInput('0')" class="btn-calc p-3 text-base font-bold rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-100 border border-stone-800 sm:col-start-3 sm:col-span-2">0</button>
+                        <button onclick="calcInput('.')" class="btn-calc p-3 text-base font-bold rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-100 border border-stone-800">.</button>
+                        <button onclick="calcCalculate()" class="btn-calc p-3 text-lg font-black rounded-xl bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 hover:from-orange-600 hover:to-amber-600 text-stone-950 shadow-lg shadow-orange-500/20 col-span-2 sm:col-span-2">=</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: JUMP BALL & FISIKA BASKETBALL -->
+            <section id="tab-jumpball" class="tab-content hidden flex-col space-y-4">
+                <div class="glass-panel p-5 rounded-2xl court-border space-y-5">
+                    <div class="flex items-center justify-between border-b border-stone-800 pb-3">
+                        <h2 class="text-lg font-bold text-orange-400 flex items-center space-x-2">
+                            <i class="fa-solid fa-basketball text-orange-500 animate-spin"></i>
+                            <span>Kalkulator Jump Ball & Fisika Lompatan</span>
+                        </h2>
+                        <span class="text-xs px-2.5 py-1 rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/30">Vertical Jump Physics</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Jump Height & Hangtime -->
+                        <div class="bg-stone-900/90 p-4 rounded-xl border border-stone-800 space-y-3">
+                            <h3 class="text-sm font-semibold text-orange-300 flex items-center space-x-2">
+                                <i class="fa-solid fa-[#000] fa-person-running text-amber-400"></i>
+                                <span>1. Tinggi Lompatan (Vertical Leap) & Hang Time</span>
+                            </h3>
+                            <p class="text-xs text-stone-400">Hitung waktu melayang di udara (Hang time) & kecepatan lepas ($v_0 = \sqrt{2gh}$)</p>
+                            
+                            <div>
+                                <label class="text-xs text-stone-400 block mb-1">Tinggi Lompatan Vertikal (cm)</label>
+                                <input type="number" id="jump-height-cm" value="75" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2.5 text-sm font-mono text-orange-300 focus:border-orange-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="text-xs text-stone-400 block mb-1">Massa Pemain (kg)</label>
+                                <input type="number" id="player-mass-kg" value="82" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2.5 text-sm font-mono text-stone-200">
+                            </div>
+                            <button onclick="calculateJumpBallPhysics()" class="w-full py-2.5 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold text-xs rounded-lg transition shadow-md">
+                                <i class="fa-solid fa-bolt mr-1"></i> Hitung Fisika Jump Ball
+                            </button>
+                            <div id="jump-physics-result" class="text-xs font-mono bg-stone-950 p-3 rounded-lg border border-orange-500/30 text-stone-200 hidden space-y-1"></div>
+                        </div>
+
+                        <!-- Ball Trajectory Simulator -->
+                        <div class="bg-stone-900/90 p-4 rounded-xl border border-stone-800 space-y-3">
+                            <h3 class="text-sm font-semibold text-amber-300 flex items-center space-x-2">
+                                <i class="fa-solid fa-bullseye text-orange-400"></i>
+                                <span>2. Simulasi Trajektori Tembakan Basket</span>
+                            </h3>
+                            <p class="text-xs text-stone-400">Sudut & Kecepatan Awal Tembakan Parabola ke Ring Basket</p>
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-xs text-stone-400">Sudut Tembak (°)</label>
+                                    <input type="number" id="shot-angle" value="48" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 text-xs font-mono text-amber-300">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-stone-400">Kecepatan Awal (m/s)</label>
+                                    <input type="number" id="shot-velocity" value="8.2" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 text-xs font-mono text-amber-300">
+                                </div>
+                            </div>
+
+                            <button onclick="calculateShotTrajectory()" class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold text-xs rounded-lg transition shadow-md">
+                                Hitung Jarak & Puncak Ring
+                            </button>
+                            <div id="shot-result" class="text-xs font-mono bg-stone-950 p-3 rounded-lg border border-amber-500/30 text-amber-300 hidden"></div>
+                        </div>
+                    </div>
+
+                    <!-- Canvas Interactive Jump Ball Launcher -->
+                    <div class="bg-stone-950 p-4 rounded-xl border border-stone-800 flex flex-col space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-orange-400 uppercase tracking-wider"><i class="fa-solid fa-gamepad mr-1"></i> Mini Simulator Jump Ball Refleks</span>
+                            <button onclick="launchJumpBallCanvas()" class="px-3 py-1 bg-orange-600 hover:bg-orange-500 text-xs text-white font-bold rounded-lg transition">
+                                <i class="fa-solid fa-play mr-1"></i> Lempar Bola!
+                            </button>
+                        </div>
+                        <div class="w-full h-48 bg-stone-900/90 rounded-lg border border-stone-800 relative flex items-center justify-center overflow-hidden">
+                            <canvas id="jumpball-canvas" class="w-full h-full block"></canvas>
+                        </div>
+                        <p id="jumpball-canvas-status" class="text-xs font-mono text-stone-400 text-center">Tekan tombol 'Lempar Bola!' untuk memulai simulasi fisika Jump Ball.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: STATISTIK BASKETBALL (PER, TS%, eFG%) -->
+            <section id="tab-hoopstats" class="tab-content hidden flex-col space-y-4">
+                <div class="glass-panel p-5 rounded-2xl court-border space-y-5">
+                    <h2 class="text-lg font-bold text-amber-400 flex items-center space-x-2">
+                        <i class="fa-solid fa-chart-column text-orange-500"></i>
+                        <span>Kalkulator Statistik Pemain & Performa Tim Basket</span>
+                    </h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- True Shooting % & eFG% -->
+                        <div class="bg-stone-900/90 p-4 rounded-xl border border-stone-800 space-y-3">
+                            <h3 class="text-sm font-semibold text-orange-300">1. True Shooting % (TS%) & Effective FG% (eFG%)</h3>
+                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                <div>
+                                    <label class="text-stone-400">Total Poin (PTS)</label>
+                                    <input type="number" id="stat-pts" value="28" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 font-mono">
+                                </div>
+                                <div>
+                                    <label class="text-stone-400">Field Goal Attempts (FGA)</label>
+                                    <input type="number" id="stat-fga" value="18" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 font-mono">
+                                </div>
+                                <div>
+                                    <label class="text-stone-400">3-Pointers Made (3PM)</label>
+                                    <input type="number" id="stat-3pm" value="4" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 font-mono">
+                                </div>
+                                <div>
+                                    <label class="text-stone-400">Field Goals Made (FGM)</label>
+                                    <input type="number" id="stat-fgm" value="10" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 font-mono">
+                                </div>
+                                <div class="col-span-2">
+                                    <label class="text-stone-400">Free Throw Attempts (FTA)</label>
+                                    <input type="number" id="stat-fta" value="6" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 font-mono">
+                                </div>
+                            </div>
+                            <button onclick="calculateBasketballStats()" class="w-full py-2 bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs rounded-lg transition">Hitung Efisiensi Tembakan</button>
+                            <div id="stat-efficiency-result" class="text-xs font-mono bg-stone-950 p-3 rounded-lg border border-stone-800 text-orange-300 hidden"></div>
+                        </div>
+
+                        <!-- Player Efficiency Rating (PER Easy Mode) -->
+                        <div class="bg-stone-900/90 p-4 rounded-xl border border-stone-800 space-y-3">
+                            <h3 class="text-sm font-semibold text-amber-300">2. Skor Efisiensi Pemain (Game Score)</h3>
+                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                <div>
+                                    <label class="text-stone-400">Rebounds (REB)</label>
+                                    <input type="number" id="stat-reb" value="8" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 font-mono">
+                                </div>
+                                <div>
+                                    <label class="text-stone-400">Assists (AST)</label>
+                                    <input type="number" id="stat-ast" value="7" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 font-mono">
+                                </div>
+                                <div>
+                                    <label class="text-stone-400">Steals (STL)</label>
+                                    <input type="number" id="stat-stl" value="2" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 font-mono">
+                                </div>
+                                <div>
+                                    <label class="text-stone-400">Blocks (BLK)</label>
+                                    <input type="number" id="stat-blk" value="1" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 font-mono">
+                                </div>
+                                <div>
+                                    <label class="text-stone-400">Turnovers (TO)</label>
+                                    <input type="number" id="stat-to" value="3" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 font-mono">
+                                </div>
+                                <div>
+                                    <label class="text-stone-400">Personal Fouls (PF)</label>
+                                    <input type="number" id="stat-pf" value="2" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 font-mono">
+                                </div>
+                            </div>
+                            <button onclick="calculateGameScore()" class="w-full py-2 bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold text-xs rounded-lg transition">Hitung Game Score Hollinger</button>
+                            <div id="gamescore-result" class="text-xs font-mono bg-stone-950 p-3 rounded-lg border border-stone-800 text-amber-300 hidden"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 5: KALKULATOR MATEMATIKA LANJUTAN -->
+            <section id="tab-math" class="tab-content hidden flex-col space-y-4">
+                <div class="glass-panel p-5 rounded-2xl court-border">
+                    <h2 class="text-lg font-bold text-orange-400 mb-4 flex items-center space-x-2">
+                        <i class="fa-solid fa-square-root-variable"></i>
+                        <span>FPB, KPK, Prima & Persamaan Aljabar</span>
+                    </h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- FPB & KPK -->
+                        <div class="bg-stone-900/80 p-4 rounded-xl border border-stone-800 space-y-3">
+                            <h3 class="text-sm font-semibold text-stone-200">1. FPB & KPK</h3>
+                            <p class="text-xs text-stone-400">Masukkan angka dipisahkan koma (contoh: 24, 36, 48)</p>
+                            <input type="text" id="fpb-kpk-input" value="24, 36" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2.5 text-sm font-mono text-stone-100 focus:border-orange-500 outline-none">
+                            <button onclick="calculateFPBKPK()" class="w-full py-2 bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs rounded-lg transition">Hitung FPB & KPK</button>
+                            <div id="fpb-kpk-result" class="text-xs font-mono bg-stone-950 p-3 rounded-lg border border-stone-800 text-stone-300 hidden"></div>
+                        </div>
+
+                        <!-- Bilangan Prima -->
+                        <div class="bg-stone-900/80 p-4 rounded-xl border border-stone-800 space-y-3">
+                            <h3 class="text-sm font-semibold text-stone-200">2. Cek & Faktor Prima</h3>
+                            <input type="number" id="prime-input" value="127" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2.5 text-sm font-mono text-stone-100 focus:border-orange-500 outline-none">
+                            <button onclick="calculatePrime()" class="w-full py-2 bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs rounded-lg transition">Cek Prima</button>
+                            <div id="prime-result" class="text-xs font-mono bg-stone-950 p-3 rounded-lg border border-stone-800 text-stone-300 hidden"></div>
+                        </div>
+
+                        <!-- Persamaan Kuadrat -->
+                        <div class="bg-stone-900/80 p-4 rounded-xl border border-stone-800 space-y-3 md:col-span-2">
+                            <h3 class="text-sm font-semibold text-stone-200">3. Persamaan Kuadrat ($ax^2 + bx + c = 0$)</h3>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div>
+                                    <label class="text-xs text-stone-400">Nilai a</label>
+                                    <input type="number" id="quad-a" value="1" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 text-sm font-mono text-stone-100">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-stone-400">Nilai b</label>
+                                    <input type="number" id="quad-b" value="-5" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 text-sm font-mono text-stone-100">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-stone-400">Nilai c</label>
+                                    <input type="number" id="quad-c" value="6" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 text-sm font-mono text-stone-100">
+                                </div>
+                            </div>
+                            <button onclick="calculateQuadratic()" class="w-full py-2 bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold text-xs rounded-lg transition">Cari Akar Persamaan</button>
+                            <div id="quad-result" class="text-xs font-mono bg-stone-950 p-3 rounded-lg border border-stone-800 text-stone-300 hidden"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 6: KALKULATOR KEUANGAN & TIKET MATCH -->
+            <section id="tab-finance" class="tab-content hidden flex-col space-y-4">
+                <div class="glass-panel p-5 rounded-2xl space-y-6 court-border">
+                    <h2 class="text-lg font-bold text-amber-400 flex items-center space-x-2">
+                        <i class="fa-solid fa-ticket"></i>
+                        <span>Kalkulator Keuangan, Tiket Game & Diskon Jersey</span>
+                    </h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Cicilan / KPR -->
+                        <div class="bg-stone-900/80 p-4 rounded-xl border border-stone-800 space-y-3">
+                            <h3 class="text-sm font-semibold text-amber-300">Simulasi Pinjaman Lapangan / KPR</h3>
+                            <div>
+                                <label class="text-xs text-stone-400">Jumlah Pinjaman (Rp)</label>
+                                <input type="number" id="loan-amount" value="150000000" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 text-sm font-mono text-stone-100">
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-xs text-stone-400">Bunga Per Tahun (%)</label>
+                                    <input type="number" step="0.1" id="loan-rate" value="7.5" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 text-sm font-mono text-stone-100">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-stone-400">Tenor (Tahun)</label>
+                                    <input type="number" id="loan-years" value="5" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 text-sm font-mono text-stone-100">
+                                </div>
+                            </div>
+                            <button onclick="calculateLoan()" class="w-full py-2 bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold text-xs rounded-lg transition">Hitung Angsuran</button>
+                            <div id="loan-result" class="text-xs font-mono bg-stone-950 p-3 rounded-lg border border-stone-800 text-amber-300 hidden"></div>
+                        </div>
+
+                        <!-- Diskon Tiket & Merchandise -->
+                        <div class="bg-stone-900/80 p-4 rounded-xl border border-stone-800 space-y-3">
+                            <h3 class="text-sm font-semibold text-amber-300">Diskon Tiket Game / Merch</h3>
+                            <div>
+                                <label class="text-xs text-stone-400">Harga Awal (Rp)</label>
+                                <input type="number" id="discount-price" value="350000" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 text-sm font-mono text-stone-100">
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-xs text-stone-400">Diskon (%)</label>
+                                    <input type="number" id="discount-pct" value="25" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 text-sm font-mono text-stone-100">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-stone-400">Pajak / PPN (%)</label>
+                                    <input type="number" id="tax-pct" value="11" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 text-sm font-mono text-stone-100">
+                                </div>
+                            </div>
+                            <button onclick="calculateDiscount()" class="w-full py-2 bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold text-xs rounded-lg transition">Hitung Total Bayar Tiket</button>
+                            <div id="discount-result" class="text-xs font-mono bg-stone-950 p-3 rounded-lg border border-stone-800 text-amber-300 hidden"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 7: KONVERSI SATUAN -->
+            <section id="tab-converter" class="tab-content hidden flex-col space-y-4">
+                <div class="glass-panel p-5 rounded-2xl space-y-4 court-border">
+                    <h2 class="text-lg font-bold text-orange-400 flex items-center space-x-2">
+                        <i class="fa-solid fa-ruler-combined"></i>
+                        <span>Konverter Satuan Lengkap (Fit, Inch, Meter & Kg)</span>
+                    </h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <select id="conv-category" onchange="updateConverterUnits()" class="bg-stone-900 border border-stone-700 rounded-lg p-2.5 text-sm font-medium text-stone-200">
+                            <option value="length">Panjang (ft, inch, cm, m, km, mile)</option>
+                            <option value="weight">Berat (kg, lbs, oz, g, mg)</option>
+                            <option value="area">Luas Lapangan (m², cm², hectare, acre)</option>
+                            <option value="volume">Volume (liter, ml, gallon)</option>
+                            <option value="temp">Suhu (Celsius, Fahrenheit, Kelvin)</option>
+                        </select>
+                        <select id="conv-from-unit" onchange="runConversion()" class="bg-stone-900 border border-stone-700 rounded-lg p-2.5 text-sm text-stone-200"></select>
+                        <select id="conv-to-unit" onchange="runConversion()" class="bg-stone-900 border border-stone-700 rounded-lg p-2.5 text-sm text-stone-200"></select>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                        <div>
+                            <label class="text-xs text-stone-400 mb-1 block">Nilai Input</label>
+                            <input type="number" id="conv-input" value="6.5" oninput="runConversion()" class="w-full bg-stone-950 border border-stone-700 rounded-xl p-3 text-lg font-mono text-stone-100">
+                        </div>
+                        <div>
+                            <label class="text-xs text-stone-400 mb-1 block">Hasil Konversi</label>
+                            <div id="conv-output" class="w-full bg-stone-900 border border-orange-500/50 rounded-xl p-3 text-lg font-mono font-bold text-orange-400">0</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 8: KALKULATOR PROGRAMMER & RPL -->
+            <section id="tab-programmer" class="tab-content hidden flex-col space-y-4">
+                <div class="glass-panel p-5 rounded-2xl space-y-6 court-border">
+                    <h2 class="text-lg font-bold text-yellow-400 flex items-center space-x-2">
+                        <i class="fa-solid fa-code"></i>
+                        <span>Kalkulator Pemrograman & Sistem Biner</span>
+                    </h2>
+
+                    <div class="bg-stone-900/90 p-4 rounded-xl border border-stone-800 space-y-3">
+                        <h3 class="text-sm font-semibold text-yellow-300">1. Konverter Basis Bilangan Real-time</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-sm">
+                            <div>
+                                <label class="text-xs text-stone-400">HEX (Hexadecimal)</label>
+                                <input type="text" id="prog-hex" oninput="syncProgrammerBases('hex')" value="2F" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 text-yellow-300">
+                            </div>
+                            <div>
+                                <label class="text-xs text-stone-400">DEC (Decimal)</label>
+                                <input type="number" id="prog-dec" oninput="syncProgrammerBases('dec')" value="47" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 text-orange-300">
+                            </div>
+                            <div>
+                                <label class="text-xs text-stone-400">OCT (Octal)</label>
+                                <input type="text" id="prog-oct" oninput="syncProgrammerBases('oct')" value="57" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 text-amber-300">
+                            </div>
+                            <div>
+                                <label class="text-xs text-stone-400">BIN (Binary)</label>
+                                <input type="text" id="prog-bin" oninput="syncProgrammerBases('bin')" value="00101111" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 text-emerald-300">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-stone-900/90 p-4 rounded-xl border border-stone-800 space-y-3">
+                        <h3 class="text-sm font-semibold text-yellow-300">2. Operasi Bitwise</h3>
+                        <div class="grid grid-cols-3 gap-2">
+                            <input type="number" id="bit-a" value="12" placeholder="Nilai A" class="bg-stone-950 border border-stone-700 rounded-lg p-2 text-xs font-mono">
+                            <select id="bit-op" class="bg-stone-950 border border-stone-700 rounded-lg p-2 text-xs font-mono text-yellow-300">
+                                <option value="AND">AND (&)</option>
+                                <option value="OR">OR (|)</option>
+                                <option value="XOR">XOR (^)</option>
+                                <option value="NOT">NOT (~A)</option>
+                                <option value="SHL">Shift Left (&lt;&lt;)</option>
+                                <option value="SHR">Shift Right (&gt;&gt;)</option>
+                            </select>
+                            <input type="number" id="bit-b" value="5" placeholder="Nilai B" class="bg-stone-950 border border-stone-700 rounded-lg p-2 text-xs font-mono">
+                        </div>
+                        <button onclick="calculateBitwise()" class="w-full py-2 bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold text-xs rounded-lg transition">Jalankan Bitwise</button>
+                        <div id="bitwise-result" class="text-xs font-mono bg-stone-950 p-3 rounded-lg border border-stone-800 text-yellow-300 hidden"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 9: GEOMETRI LAPANGAN BASKET 2D & 3D -->
+            <section id="tab-geometry" class="tab-content hidden flex-col space-y-4">
+                <div class="glass-panel p-5 rounded-2xl space-y-4 court-border">
+                    <h2 class="text-lg font-bold text-orange-400 flex items-center space-x-2">
+                        <i class="fa-solid fa-shapes"></i>
+                        <span>Kalkulator Geometri Lapangan & Bola Basket</span>
+                    </h2>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-xs text-stone-400 mb-1 block">Pilih Bentuk Objek</label>
+                            <select id="geom-shape" onchange="renderGeometryInputs()" class="w-full bg-stone-900 border border-stone-700 rounded-lg p-2.5 text-sm text-stone-200">
+                                <option value="sphere">Bola Basket (3D Sphere)</option>
+                                <option value="circle">Lingkaran Jump Ball (2D)</option>
+                                <option value="rectangle">Lapangan Basket (2D Rectangle)</option>
+                                <option value="cylinder">Ring Basket & Net (3D Cylinder)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                        <div id="geom-inputs-container" class="space-y-3 bg-stone-900/60 p-4 rounded-xl border border-stone-800">
+                            <!-- Dynamic inputs loaded via JS -->
+                        </div>
+                        <div id="geom-visual-preview" class="bg-stone-950 p-4 rounded-xl border border-stone-800 flex flex-col items-center justify-center min-h-[160px] text-center">
+                            <!-- SVG preview -->
+                        </div>
+                    </div>
+                    <button onclick="calculateGeometry()" class="w-full py-2.5 bg-orange-600 hover:bg-orange-500 text-white font-bold text-sm rounded-xl transition">Hitung Volume & Luas Permukaan</button>
+                    <div id="geom-result" class="text-xs font-mono bg-stone-950 p-4 rounded-xl border border-stone-800 text-orange-300 hidden"></div>
+                </div>
+            </section>
+
+            <!-- TAB 10: STOPWATCH & TIMER GAME -->
+            <section id="tab-datetime" class="tab-content hidden flex-col space-y-4">
+                <div class="glass-panel p-5 rounded-2xl space-y-4 court-border">
+                    <h2 class="text-lg font-bold text-orange-400 flex items-center space-x-2">
+                        <i class="fa-solid fa-stopwatch"></i>
+                        <span>Shot Clock, Timer Game & Hitung Tanggal</span>
+                    </h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Basketball Shotclock Simulator -->
+                        <div class="bg-stone-900/80 p-4 rounded-xl border border-stone-800 space-y-3 text-center">
+                            <h3 class="text-sm font-bold text-rose-400">24-Second Shot Clock Simulator</h3>
+                            <div id="shotclock-display" class="text-6xl font-black font-mono text-rose-500 py-4 bg-stone-950 rounded-xl border border-rose-900/50">24.0</div>
+                            <div class="flex justify-center space-x-2">
+                                <button onclick="startShotClock()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg">START</button>
+                                <button onclick="pauseShotClock()" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold text-xs rounded-lg">PAUSE</button>
+                                <button onclick="resetShotClock()" class="px-4 py-2 bg-rose-700 hover:bg-rose-600 text-white font-bold text-xs rounded-lg">RESET (24s)</button>
+                                <button onclick="resetShotClock(14)" class="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs rounded-lg">OFF REB (14s)</button>
+                            </div>
+                        </div>
+
+                        <!-- Selisih Tanggal / Umur Pemain -->
+                        <div class="bg-stone-900/80 p-4 rounded-xl border border-stone-800 space-y-3">
+                            <h3 class="text-sm font-semibold text-orange-300">Hitung Usia Pemain Presisi</h3>
+                            <div>
+                                <label class="text-xs text-stone-400">Tanggal Lahir Pemain</label>
+                                <input type="date" id="dob-input" value="2002-04-12" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 text-xs text-stone-100">
+                            </div>
+                            <button onclick="calculateAgeDetail()" class="w-full py-2 bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs rounded-lg transition">Hitung Umur Pemain</button>
+                            <div id="age-result" class="text-xs font-mono bg-stone-950 p-3 rounded-lg border border-stone-800 text-orange-300 hidden"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 11: SPLIT BILL TIM & BENSIN DEPLASEMENT -->
+            <section id="tab-daily" class="tab-content hidden flex-col space-y-4">
+                <div class="glass-panel p-5 rounded-2xl space-y-4 court-border">
+                    <h2 class="text-lg font-bold text-amber-400 flex items-center space-x-2">
+                        <i class="fa-solid fa-users"></i>
+                        <span>Split Bill Makan Tim & Biaya Bensin Tanding</span>
+                    </h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Split Bill Tim -->
+                        <div class="bg-stone-900/80 p-4 rounded-xl border border-stone-800 space-y-3">
+                            <h3 class="text-sm font-semibold text-amber-300">Split Bill Makan Setelah Game</h3>
+                            <div>
+                                <label class="text-xs text-stone-400">Total Bill Resto (Rp)</label>
+                                <input type="number" id="bill-amount" value="450000" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 text-xs font-mono">
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-xs text-stone-400">Tip / Service (%)</label>
+                                    <input type="number" id="tip-pct" value="10" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 text-xs font-mono">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-stone-400">Jumlah Pemain/Personil</label>
+                                    <input type="number" id="people-count" value="5" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 text-xs font-mono">
+                                </div>
+                            </div>
+                            <button onclick="calculateSplitBill()" class="w-full py-2 bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold text-xs rounded-lg transition">Hitung Bagian Per Pemain</button>
+                            <div id="bill-result" class="text-xs font-mono bg-stone-950 p-3 rounded-lg border border-stone-800 text-amber-300 hidden"></div>
+                        </div>
+
+                        <!-- Fuel Cost -->
+                        <div class="bg-stone-900/80 p-4 rounded-xl border border-stone-800 space-y-3">
+                            <h3 class="text-sm font-semibold text-amber-300">Estimasi Bensin Perjalanan Away Game</h3>
+                            <div>
+                                <label class="text-xs text-stone-400">Jarak Tempuh (km)</label>
+                                <input type="number" id="fuel-dist" value="120" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 text-xs font-mono">
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-xs text-stone-400">Konsumsi (km/Liter)</label>
+                                    <input type="number" id="fuel-eff" value="12" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 text-xs font-mono">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-stone-400">Harga BBM / Liter</label>
+                                    <input type="number" id="fuel-price" value="13900" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 text-xs font-mono">
+                                </div>
+                            </div>
+                            <button onclick="calculateFuelCost()" class="w-full py-2 bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold text-xs rounded-lg transition">Hitung Biaya Bensin</button>
+                            <div id="fuel-result" class="text-xs font-mono bg-stone-950 p-3 rounded-lg border border-stone-800 text-amber-300 hidden"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 12: FITUR AI MATH & BASKETBALL SOLVER -->
+            <section id="tab-ai-solver" class="tab-content hidden flex-col space-y-4">
+                <div class="glass-panel p-5 rounded-2xl space-y-5 court-border">
+                    <div class="flex items-center justify-between border-b border-stone-800 pb-3">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center text-orange-400 text-xl border border-orange-500/30">
+                                <i class="fa-solid fa-robot"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-base font-bold text-orange-300">Asisten AI Matematika & Fisika Basket</h2>
+                                <p class="text-xs text-stone-400">Powered by Gemini 3 Flash Preview</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <label class="text-xs font-semibold text-stone-300">Tanyakan Soal Matematika, Fisika Jump Ball, atau Strategi Basket</label>
+                        <textarea id="ai-query-input" rows="3" placeholder="Contoh: 'Berapa energi potensial pemain basket bermassa 80 kg yang melompat setinggi 85 cm di jump ball?' atau 'Tentukan turunan dari f(x) = 4x^3 - 2x + 5'" class="w-full bg-stone-950 border border-stone-700 rounded-xl p-3 text-sm text-stone-100 focus:border-orange-500 outline-none resize-none"></textarea>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <input type="file" id="ai-image-file" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+                            <button onclick="document.getElementById('ai-image-file').click()" class="px-3 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs font-medium border border-stone-700 transition flex items-center space-x-2">
+                                <i class="fa-solid fa-camera text-orange-400"></i>
+                                <span>Unggah Foto Soal</span>
+                            </button>
+                            <span id="ai-image-status" class="text-xs text-emerald-400 hidden">✓ Foto Terlampir</span>
+                        </div>
+                        <button onclick="sendAIQuery()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 hover:from-orange-600 hover:to-amber-600 text-stone-950 text-sm font-extrabold shadow-lg shadow-orange-500/20 flex items-center space-x-2 transition">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>Selesaikan dengan AI</span>
+                        </button>
+                    </div>
+
+                    <!-- AI Output Result -->
+                    <div id="ai-loading" class="hidden text-center py-8">
+                        <i class="fa-solid fa-basketball fa-spin text-3xl text-orange-500"></i>
+                        <p class="text-xs text-stone-400 mt-2">Gemini AI sedang menganalisis & memecahkan soal...</p>
+                    </div>
+
+                    <div id="ai-response-box" class="hidden bg-stone-950/90 border border-orange-500/30 p-5 rounded-xl space-y-3 font-sans text-sm text-stone-200 leading-relaxed overflow-x-auto">
+                        <!-- AI Explanation -->
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Modal Riwayat Perhitungan -->
+    <div id="history-modal" class="fixed inset-0 bg-stone-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-md rounded-2xl p-5 space-y-4 border border-stone-700">
+            <div class="flex items-center justify-between border-b border-stone-800 pb-3">
+                <h3 class="font-bold text-stone-100 flex items-center space-x-2">
+                    <i class="fa-solid fa-clock-rotate-left text-orange-400"></i>
+                    <span>Riwayat Perhitungan</span>
+                </h3>
+                <button onclick="toggleHistoryModal()" class="text-stone-400 hover:text-stone-200">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div id="history-modal-list" class="space-y-2 max-h-80 overflow-y-auto font-mono text-xs pr-1"></div>
+            <div class="flex justify-between pt-2">
+                <button onclick="clearHistory()" class="px-3 py-1.5 rounded-lg bg-rose-950 hover:bg-rose-900 text-rose-300 text-xs border border-rose-800">Hapus Semua</button>
+                <button onclick="toggleHistoryModal()" class="px-4 py-1.5 rounded-lg bg-stone-800 text-stone-200 text-xs">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let calcExpr = "";
+        let calcAns = "0";
+        let angleUnit = "DEG";
+        let calcHistory = [];
+        let attachedImageBase64 = null;
+        let shotClockInterval = null;
+        let shotClockTime = 24.0;
+
+        window.onload = function() {
+            renderGeometryInputs();
+            updateConverterUnits();
+            setupKeyboardSupport();
+            syncProgrammerBases('dec');
+            drawJumpBallCanvas();
+        };
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            const activeTab = document.getElementById(`tab-${tabId}`);
+            if(activeTab) activeTab.classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-orange-600/20', 'text-orange-400', 'border', 'border-orange-500/30');
+                btn.classList.add('text-stone-400');
+            });
+
+            const activeBtn = document.querySelector(`[data-tab="${tabId}"]`);
+            if(activeBtn) {
+                activeBtn.classList.add('bg-orange-600/20', 'text-orange-400', 'border', 'border-orange-500/30');
+                activeBtn.classList.remove('text-stone-400');
+            }
+        }
+
+        function toggleAngleUnit() {
+            angleUnit = (angleUnit === "DEG") ? "RAD" : "DEG";
+            document.getElementById('deg-rad-btn').innerText = angleUnit;
+        }
+
+        function calcInput(val) {
+            calcExpr += val;
+            updateCalcDisplay();
+        }
+
+        function calcAction(action) {
+            if(action === 'AC') {
+                calcExpr = "";
+                calcAns = "0";
+            } else if(action === 'CE') {
+                calcExpr = "";
+            } else if(action === 'DEL') {
+                calcExpr = calcExpr.slice(0, -1);
+            } else if(action === 'ANS') {
+                calcExpr += calcAns;
+            } else if(action === 'TOGGLE_SIGN') {
+                if(calcExpr.startsWith('-')) {
+                    calcExpr = calcExpr.substring(1);
+                } else {
+                    calcExpr = '-' + calcExpr;
+                }
+            }
+            updateCalcDisplay();
+        }
+
+        function updateCalcDisplay() {
+            document.getElementById('calc-history-line').innerText = calcExpr || " ";
+            document.getElementById('calc-display').innerText = calcExpr ? calcExpr : calcAns;
+        }
+
+        function calcCalculate() {
+            if(!calcExpr) return;
+            try {
+                let sanitized = calcExpr
+                    .replace(/π/g, 'Math.PI')
+                    .replace(/e/g, 'Math.E')
+                    .replace(/mod/g, '%')
+                    .replace(/\^/g, '**');
+
+                sanitized = parseTrigFunctions(sanitized);
+
+                let result = eval(sanitized);
+                if(typeof result === 'number' && !isNaN(result)) {
+                    result = parseFloat(result.toFixed(8));
+                    calcAns = result.toString();
+                    
+                    calcHistory.unshift({ expr: calcExpr, res: calcAns, date: new Date().toLocaleTimeString() });
+                    if(calcHistory.length > 20) calcHistory.pop();
+                    
+                    calcExpr = calcAns;
+                    updateCalcDisplay();
+                } else {
+                    document.getElementById('calc-display').innerText = "Error";
+                }
+            } catch(e) {
+                document.getElementById('calc-display').innerText = "Error";
+            }
+        }
+
+        function parseTrigFunctions(expr) {
+            let degFactor = (angleUnit === "DEG") ? "(Math.PI/180)*" : "";
+            expr = expr.replace(/sin\(([^)]+)\)/g, (m, p1) => `Math.sin(${degFactor}${p1})`);
+            expr = expr.replace(/cos\(([^)]+)\)/g, (m, p1) => `Math.cos(${degFactor}${p1})`);
+            expr = expr.replace(/tan\(([^)]+)\)/g, (m, p1) => `Math.tan(${degFactor}${p1})`);
+            expr = expr.replace(/asin\(([^)]+)\)/g, (m, p1) => `Math.asin(${p1})`);
+            expr = expr.replace(/acos\(([^)]+)\)/g, (m, p1) => `Math.acos(${p1})`);
+            expr = expr.replace(/atan\(([^)]+)\)/g, (m, p1) => `Math.atan(${p1})`);
+            expr = expr.replace(/sinh\(([^)]+)\)/g, (m, p1) => `Math.sinh(${p1})`);
+            expr = expr.replace(/cosh\(([^)]+)\)/g, (m, p1) => `Math.cosh(${p1})`);
+            expr = expr.replace(/tanh\(([^)]+)\)/g, (m, p1) => `Math.tanh(${p1})`);
+            expr = expr.replace(/log\(([^)]+)\)/g, (m, p1) => `Math.log10(${p1})`);
+            expr = expr.replace(/ln\(([^)]+)\)/g, (m, p1) => `Math.log(${p1})`);
+            expr = expr.replace(/sqrt\(([^)]+)\)/g, (m, p1) => `Math.sqrt(${p1})`);
+            expr = expr.replace(/fact\(([^)]+)\)/g, (m, p1) => `factorial(${p1})`);
+            return expr;
+        }
+
+        function factorial(n) {
+            n = parseInt(n);
+            if (n < 0) return NaN;
+            if (n === 0 || n === 1) return 1;
+            let res = 1;
+            for (let i = 2; i <= n; i++) res *= i;
+            return res;
+        }
+
+        function copyCalcResult() {
+            let val = document.getElementById('calc-display').innerText;
+            const temp = document.createElement('textarea');
+            temp.value = val;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+            alert("Hasil disalin ke clipboard: " + val);
+        }
+
+        function setupKeyboardSupport() {
+            document.addEventListener('keydown', (e) => {
+                if(document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+                
+                if (e.key >= '0' && e.key <= '9') calcInput(e.key);
+                else if (['+', '-', '*', '/', '.', '(', ')', '%', '^'].includes(e.key)) calcInput(e.key);
+                else if (e.key === 'Enter' || e.key === '=') calcCalculate();
+                else if (e.key === 'Backspace') calcAction('DEL');
+                else if (e.key === 'Escape') calcAction('AC');
+            });
+        }
+
+        /* JUMP BALL PHYSICS LOGIC */
+        function calculateJumpBallPhysics() {
+            let hCm = parseFloat(document.getElementById('jump-height-cm').value) || 0;
+            let mKg = parseFloat(document.getElementById('player-mass-kg').value) || 0;
+            let g = 9.81;
+
+            let hM = hCm / 100;
+            let v0 = Math.sqrt(2 * g * hM); // Initial launch velocity
+            let hangtime = 2 * Math.sqrt((2 * hM) / g); // Total time in air
+            let energyJ = mKg * g * hM; // Potential energy at peak
+
+            let out = document.getElementById('jump-physics-result');
+            out.innerHTML = `
+                <div><strong>Kecepatan Lepas ($v_0$):</strong> ${v0.toFixed(2)} m/s (${(v0 * 3.6).toFixed(1)} km/jam)</div>
+                <div><strong>Hang Time (Waktu Udara):</strong> <span class="text-amber-400 font-bold">${hangtime.toFixed(2)} detik</span></div>
+                <div><strong>Energi Lompatan Peak:</strong> ${energyJ.toFixed(1)} Joules</div>
+            `;
+            out.classList.remove('hidden');
+        }
+
+        function calculateShotTrajectory() {
+            let deg = parseFloat(document.getElementById('shot-angle').value) || 0;
+            let v0 = parseFloat(document.getElementById('shot-velocity').value) || 0;
+            let g = 9.81;
+
+            let rad = (deg * Math.PI) / 180;
+            let maxDist = (v0 * v0 * Math.sin(2 * rad)) / g;
+            let maxHeight = (v0 * v0 * Math.sin(rad) * Math.sin(rad)) / (2 * g);
+
+            let out = document.getElementById('shot-result');
+            out.innerHTML = `
+                <div><strong>Jarak Jangkauan Lemparan:</strong> ${maxDist.toFixed(2)} Meter</div>
+                <div><strong>Tinggi Puncak Arc Bola:</strong> ${maxHeight.toFixed(2)} Meter</div>
+            `;
+            out.classList.remove('hidden');
+        }
+
+        /* BASKETBALL STATS */
+        function calculateBasketballStats() {
+            let pts = parseFloat(document.getElementById('stat-pts').value) || 0;
+            let fga = parseFloat(document.getElementById('stat-fga').value) || 0;
+            let fgm = parseFloat(document.getElementById('stat-fgm').value) || 0;
+            let pm3 = parseFloat(document.getElementById('stat-3pm').value) || 0;
+            let fta = parseFloat(document.getElementById('stat-fta').value) || 0;
+
+            let tsPct = (pts / (2 * (fga + 0.44 * fta))) * 100;
+            let eFgPct = ((fgm + 0.5 * pm3) / (fga || 1)) * 100;
+
+            let out = document.getElementById('stat-efficiency-result');
+            out.innerHTML = `
+                <div><strong>True Shooting % (TS%):</strong> <span class="text-orange-400 font-bold">${isNaN(tsPct) ? 0 : tsPct.toFixed(1)}%</span></div>
+                <div><strong>Effective FG % (eFG%):</strong> ${isNaN(eFgPct) ? 0 : eFgPct.toFixed(1)}%</div>
+            `;
+            out.classList.remove('hidden');
+        }
+
+        function calculateGameScore() {
+            let pts = parseFloat(document.getElementById('stat-pts').value) || 0;
+            let fgm = parseFloat(document.getElementById('stat-fgm').value) || 0;
+            let fga = parseFloat(document.getElementById('stat-fga').value) || 0;
+            let fta = parseFloat(document.getElementById('stat-fta').value) || 0;
+            let reb = parseFloat(document.getElementById('stat-reb').value) || 0;
+            let ast = parseFloat(document.getElementById('stat-ast').value) || 0;
+            let stl = parseFloat(document.getElementById('stat-stl').value) || 0;
+            let blk = parseFloat(document.getElementById('stat-blk').value) || 0;
+            let to = parseFloat(document.getElementById('stat-to').value) || 0;
+            let pf = parseFloat(document.getElementById('stat-pf').value) || 0;
+
+            let gameScore = pts + 0.4 * fgm - 0.7 * fga - 0.4 * fta + 0.7 * reb + 0.7 * ast + stl + 0.7 * blk - to - 0.4 * pf;
+
+            let out = document.getElementById('gamescore-result');
+            out.innerHTML = `<div><strong>Hollinger Game Score:</strong> <span class="text-amber-400 font-bold">${gameScore.toFixed(1)}</span></div>`;
+            out.classList.remove('hidden');
+        }
+
+        /* SHOTCLOCK TIMER */
+        function startShotClock() {
+            if(shotClockInterval) clearInterval(shotClockInterval);
+            shotClockInterval = setInterval(() => {
+                if(shotClockTime > 0.1) {
+                    shotClockTime -= 0.1;
+                    document.getElementById('shotclock-display').innerText = shotClockTime.toFixed(1);
+                } else {
+                    shotClockTime = 0.0;
+                    document.getElementById('shotclock-display').innerText = "0.0 VIOLATION!";
+                    clearInterval(shotClockInterval);
+                }
+            }, 100);
+        }
+
+        function pauseShotClock() {
+            if(shotClockInterval) clearInterval(shotClockInterval);
+        }
+
+        function resetShotClock(val = 24) {
+            pauseShotClock();
+            shotClockTime = val;
+            document.getElementById('shotclock-display').innerText = shotClockTime.toFixed(1);
+        }
+
+        /* CANVAS JUMP BALL SIMULATOR */
+        function drawJumpBallCanvas() {
+            const canvas = document.getElementById('jumpball-canvas');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw center court circle
+            ctx.strokeStyle = 'rgba(249, 115, 22, 0.4)';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, 45, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Basketball in center
+            ctx.fillStyle = '#ea580c';
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, 16, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+        }
+
+        function launchJumpBallCanvas() {
+            const canvas = document.getElementById('jumpball-canvas');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            let ballY = canvas.height / 2;
+            let vy = -12;
+            let gravity = 0.45;
+
+            document.getElementById('jumpball-canvas-status').innerText = "Jump Ball dilempar Wasit! Pemain siap melompat...";
+
+            let anim = setInterval(() => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Draw center court circle
+                ctx.strokeStyle = 'rgba(249, 115, 22, 0.4)';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, canvas.height / 2, 45, 0, Math.PI * 2);
+                ctx.stroke();
+
+                ballY += vy;
+                vy += gravity;
+
+                if(ballY >= canvas.height / 2) {
+                    ballY = canvas.height / 2;
+                    clearInterval(anim);
+                    document.getElementById('jumpball-canvas-status').innerText = "Jump Ball Selesai! Penguasaan bola berhasil diamankan.";
+                }
+
+                // Basketball
+                ctx.fillStyle = '#ea580c';
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, ballY, 16, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }, 20);
+        }
+
+        /* CONVERTER & GEOMETRY UTILS */
+        function calculateFPBKPK() {
+            let raw = document.getElementById('fpb-kpk-input').value;
+            let nums = raw.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+            if(nums.length < 2) return;
+
+            const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+            const lcm = (a, b) => (a * b) / gcd(a, b);
+
+            let resGCD = nums.reduce((acc, curr) => gcd(acc, curr));
+            let resLCM = nums.reduce((acc, curr) => lcm(acc, curr));
+
+            let out = document.getElementById('fpb-kpk-result');
+            out.innerHTML = `<strong>Hasil FPB:</strong> ${resGCD}<br><strong>Hasil KPK:</strong> ${resLCM}`;
+            out.classList.remove('hidden');
+        }
+
+        function calculatePrime() {
+            let num = parseInt(document.getElementById('prime-input').value);
+            if(isNaN(num)) return;
+
+            let isPrime = num > 1;
+            for(let i = 2; i <= Math.sqrt(num); i++) {
+                if(num % i === 0) { isPrime = false; break; }
+            }
+
+            let out = document.getElementById('prime-result');
+            out.innerHTML = `<strong>Status:</strong> ${isPrime ? '<span class="text-emerald-400">Bilangan Prima</span>' : '<span class="text-rose-400">Bukan Bilangan Prima</span>'}`;
+            out.classList.remove('hidden');
+        }
+
+        function calculateQuadratic() {
+            let a = parseFloat(document.getElementById('quad-a').value);
+            let b = parseFloat(document.getElementById('quad-b').value);
+            let c = parseFloat(document.getElementById('quad-c').value);
+
+            let D = b*b - 4*a*c;
+            let out = document.getElementById('quad-result');
+
+            if(D > 0) {
+                let x1 = (-b + Math.sqrt(D)) / (2*a);
+                let x2 = (-b - Math.sqrt(D)) / (2*a);
+                out.innerHTML = `<strong>Diskriminan (D):</strong> ${D}<br><strong>Akar x1:</strong> ${x1.toFixed(4)}<br><strong>Akar x2:</strong> ${x2.toFixed(4)}`;
+            } else if(D === 0) {
+                let x = -b / (2*a);
+                out.innerHTML = `<strong>Diskriminan (D):</strong> 0<br><strong>Akar Kembar (x):</strong> ${x.toFixed(4)}`;
+            } else {
+                out.innerHTML = `<strong>Diskriminan (D):</strong> ${D} (Akar Imajiner)`;
+            }
+            out.classList.remove('hidden');
+        }
+
+        function calculateLoan() {
+            let P = parseFloat(document.getElementById('loan-amount').value);
+            let rateYr = parseFloat(document.getElementById('loan-rate').value);
+            let years = parseFloat(document.getElementById('loan-years').value);
+
+            let r = (rateYr / 100) / 12;
+            let n = years * 12;
+
+            let emi = (P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+            let totalPay = emi * n;
+
+            let out = document.getElementById('loan-result');
+            out.innerHTML = `<strong>Angsuran Per Bulan:</strong> Rp ${Math.round(emi).toLocaleString('id-ID')}<br><strong>Total Bayar:</strong> Rp ${Math.round(totalPay).toLocaleString('id-ID')}`;
+            out.classList.remove('hidden');
+        }
+
+        function calculateDiscount() {
+            let price = parseFloat(document.getElementById('discount-price').value);
+            let disc = parseFloat(document.getElementById('discount-pct').value);
+            let tax = parseFloat(document.getElementById('tax-pct').value);
+
+            let discAmount = price * (disc / 100);
+            let priceAfterDisc = price - discAmount;
+            let taxAmount = priceAfterDisc * (tax / 100);
+            let finalPrice = priceAfterDisc + taxAmount;
+
+            let out = document.getElementById('discount-result');
+            out.innerHTML = `<strong>Harga Akhir:</strong> Rp ${finalPrice.toLocaleString('id-ID')}`;
+            out.classList.remove('hidden');
+        }
+
+        const unitRatios = {
+            length: { ft: 0.3048, inch: 0.0254, cm: 0.01, m: 1, km: 1000, mile: 1609.34 },
+            weight: { kg: 1, lbs: 0.453592, oz: 0.0283495, g: 0.001, mg: 0.000001 }
+        };
+
+        function updateConverterUnits() {
+            let cat = document.getElementById('conv-category').value;
+            let fromSelect = document.getElementById('conv-from-unit');
+            let toSelect = document.getElementById('conv-to-unit');
+
+            fromSelect.innerHTML = "";
+            toSelect.innerHTML = "";
+
+            let units = Object.keys(unitRatios[cat] || { c: "Celsius", f: "Fahrenheit" });
+            units.forEach(u => {
+                fromSelect.innerHTML += `<option value="${u}">${u}</option>`;
+                toSelect.innerHTML += `<option value="${u}">${u}</option>`;
+            });
+
+            if(units.length > 1) toSelect.selectedIndex = 1;
+            runConversion();
+        }
+
+        function runConversion() {
+            let val = parseFloat(document.getElementById('conv-input').value) || 0;
+            let cat = document.getElementById('conv-category').value;
+            let from = document.getElementById('conv-from-unit').value;
+            let to = document.getElementById('conv-to-unit').value;
+
+            let res = 0;
+            if(cat === 'temp') {
+                if(from === to) res = val;
+                else if(from === 'c' && to === 'f') res = (val * 9/5) + 32;
+                else if(from === 'f' && to === 'c') res = (val - 32) * 5/9;
+            } else if(unitRatios[cat]) {
+                let baseVal = val * unitRatios[cat][from];
+                res = baseVal / unitRatios[cat][to];
+            }
+
+            document.getElementById('conv-output').innerText = res.toLocaleString('id-ID', { maximumFractionDigits: 4 }) + " " + to;
+        }
+
+        function syncProgrammerBases(source) {
+            let decVal = 0;
+            if(source === 'dec') decVal = parseInt(document.getElementById('prog-dec').value) || 0;
+            else if(source === 'hex') decVal = parseInt(document.getElementById('prog-hex').value, 16) || 0;
+            else if(source === 'oct') decVal = parseInt(document.getElementById('prog-oct').value, 8) || 0;
+            else if(source === 'bin') decVal = parseInt(document.getElementById('prog-bin').value, 2) || 0;
+
+            if(source !== 'dec') document.getElementById('prog-dec').value = decVal;
+            if(source !== 'hex') document.getElementById('prog-hex').value = decVal.toString(16).toUpperCase();
+            if(source !== 'oct') document.getElementById('prog-oct').value = decVal.toString(8);
+            if(source !== 'bin') document.getElementById('prog-bin').value = decVal.toString(2).padStart(8, '0');
+        }
+
+        function calculateBitwise() {
+            let a = parseInt(document.getElementById('bit-a').value) || 0;
+            let b = parseInt(document.getElementById('bit-b').value) || 0;
+            let op = document.getElementById('bit-op').value;
+
+            let res = 0;
+            if(op === 'AND') res = a & b;
+            else if(op === 'OR') res = a | b;
+            else if(op === 'XOR') res = a ^ b;
+            else if(op === 'NOT') res = ~a;
+            else if(op === 'SHL') res = a << b;
+            else if(op === 'SHR') res = a >> b;
+
+            let out = document.getElementById('bitwise-result');
+            out.innerHTML = `<strong>Hasil Desimal:</strong> ${res}<br><strong>Binary:</strong> ${(res >>> 0).toString(2).padStart(8, '0')}`;
+            out.classList.remove('hidden');
+        }
+
+        function renderGeometryInputs() {
+            let shape = document.getElementById('geom-shape').value;
+            let container = document.getElementById('geom-inputs-container');
+            let preview = document.getElementById('geom-visual-preview');
+
+            if(shape === 'sphere') {
+                container.innerHTML = `
+                    <label class="text-xs text-stone-400">Jari-jari Bola Basket r (cm)</label>
+                    <input type="number" id="g-r" value="12" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 text-xs font-mono">
+                `;
+                preview.innerHTML = `<i class="fa-solid fa-basketball text-6xl text-orange-500 bounce-anim"></i>`;
+            } else if(shape === 'circle') {
+                container.innerHTML = `
+                    <label class="text-xs text-stone-400">Jari-jari Lingkaran Jump Ball r (m)</label>
+                    <input type="number" id="g-r" value="1.8" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 text-xs font-mono">
+                `;
+                preview.innerHTML = `<svg width="100" height="100"><circle cx="50" cy="50" r="40" stroke="#f97316" stroke-width="3" fill="rgba(249,115,22,0.2)"/></svg>`;
+            } else if(shape === 'rectangle') {
+                container.innerHTML = `
+                    <label class="text-xs text-stone-400">Panjang Lapangan p (m)</label>
+                    <input type="number" id="g-p" value="28" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 text-xs font-mono mb-2">
+                    <label class="text-xs text-stone-400">Lebar Lapangan l (m)</label>
+                    <input type="number" id="g-l" value="15" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 text-xs font-mono">
+                `;
+                preview.innerHTML = `<svg width="120" height="80"><rect x="10" y="15" width="100" height="50" stroke="#f97316" stroke-width="3" fill="rgba(249,115,22,0.2)"/></svg>`;
+            } else if(shape === 'cylinder') {
+                container.innerHTML = `
+                    <label class="text-xs text-stone-400">Jari-jari Ring Basket r (cm)</label>
+                    <input type="number" id="g-r" value="22.5" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 text-xs font-mono mb-2">
+                    <label class="text-xs text-stone-400">Tinggi Net h (cm)</label>
+                    <input type="number" id="g-h" value="40" class="w-full bg-stone-950 border border-stone-700 rounded-lg p-2 text-xs font-mono">
+                `;
+                preview.innerHTML = `<i class="fa-solid fa-bullseye text-5xl text-orange-400"></i>`;
+            }
+        }
+
+        function calculateGeometry() {
+            let shape = document.getElementById('geom-shape').value;
+            let out = document.getElementById('geom-result');
+
+            if(shape === 'sphere') {
+                let r = parseFloat(document.getElementById('g-r').value);
+                let vol = (4/3) * Math.PI * Math.pow(r, 3);
+                let surfArea = 4 * Math.PI * r * r;
+                out.innerHTML = `<strong>Volume Bola:</strong> ${vol.toFixed(2)} cm³<br><strong>Luas Permukaan:</strong> ${surfArea.toFixed(2)} cm²`;
+            } else if(shape === 'circle') {
+                let r = parseFloat(document.getElementById('g-r').value);
+                out.innerHTML = `<strong>Luas Jump Circle:</strong> ${(Math.PI * r * r).toFixed(2)} m²<br><strong>Keliling:</strong> ${(2 * Math.PI * r).toFixed(2)} m`;
+            } else if(shape === 'rectangle') {
+                let p = parseFloat(document.getElementById('g-p').value);
+                let l = parseFloat(document.getElementById('g-l').value);
+                out.innerHTML = `<strong>Luas Lapangan:</strong> ${(p * l).toFixed(2)} m²<br><strong>Keliling:</strong> ${(2 * (p + l)).toFixed(2)} m`;
+            } else if(shape === 'cylinder') {
+                let r = parseFloat(document.getElementById('g-r').value);
+                let h = parseFloat(document.getElementById('g-h').value);
+                let vol = Math.PI * r * r * h;
+                out.innerHTML = `<strong>Volume Silinder Ring:</strong> ${vol.toFixed(2)} cm³`;
+            }
+            out.classList.remove('hidden');
+        }
+
+        function calculateAgeDetail() {
+            let dob = new Date(document.getElementById('dob-input').value);
+            let now = new Date();
+
+            let ageYears = now.getFullYear() - dob.getFullYear();
+            let ageMonths = now.getMonth() - dob.getMonth();
+            if (ageMonths < 0 || (ageMonths === 0 && now.getDate() < dob.getDate())) ageYears--;
+
+            let out = document.getElementById('age-result');
+            out.innerHTML = `<strong>Umur Pemain:</strong> ${ageYears} Tahun`;
+            out.classList.remove('hidden');
+        }
+
+        function calculateSplitBill() {
+            let bill = parseFloat(document.getElementById('bill-amount').value);
+            let tipPct = parseFloat(document.getElementById('tip-pct').value);
+            let people = parseInt(document.getElementById('people-count').value);
+
+            let totalTip = bill * (tipPct / 100);
+            let total = bill + totalTip;
+            let perPerson = total / people;
+
+            let out = document.getElementById('bill-result');
+            out.innerHTML = `<strong>Bayar Per Orang:</strong> Rp ${Math.round(perPerson).toLocaleString('id-ID')}`;
+            out.classList.remove('hidden');
+        }
+
+        function calculateFuelCost() {
+            let dist = parseFloat(document.getElementById('fuel-dist').value);
+            let eff = parseFloat(document.getElementById('fuel-eff').value);
+            let price = parseFloat(document.getElementById('fuel-price').value);
+
+            let liters = dist / eff;
+            let cost = liters * price;
+
+            let out = document.getElementById('fuel-result');
+            out.innerHTML = `<strong>Biaya Bensin:</strong> Rp ${Math.round(cost).toLocaleString('id-ID')} (${liters.toFixed(1)} Liter)`;
+            out.classList.remove('hidden');
+        }
+
+        function handleImageUpload(e) {
+            let file = e.target.files[0];
+            if(file) {
+                let reader = new FileReader();
+                reader.onloadend = function() {
+                    attachedImageBase64 = reader.result.split(',')[1];
+                    document.getElementById('ai-image-status').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function sendAIQuery() {
+            let query = document.getElementById('ai-query-input').value.trim();
+            if(!query && !attachedImageBase64) return;
+
+            document.getElementById('ai-loading').classList.remove('hidden');
+            document.getElementById('ai-response-box').classList.add('hidden');
+
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+            const systemPrompt = "Anda adalah pelatih fisika & asisten matematika basket berpengalaman. Selesaikan soal atau pertanyaan berikut dengan bahasa Indonesia yang jelas, bertahap, dan solutif.";
+
+            let parts = [{ text: query || "Selesaikan soal pada gambar berikut." }];
+            if(attachedImageBase64) {
+                parts.push({
+                    inlineData: { mimeType: "image/png", data: attachedImageBase64 }
+                });
+            }
+
+            try {
+                let res = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: parts }],
+                        systemInstruction: { parts: [{ text: systemPrompt }] }
+                    })
+                });
+                let data = await res.json();
+                let text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Maaf, AI gagal memproses jawaban.";
+
+                let formattedText = text
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\n/g, '<br>');
+
+                let box = document.getElementById('ai-response-box');
+                box.innerHTML = formattedText;
+                box.classList.remove('hidden');
+            } catch(e) {
+                let box = document.getElementById('ai-response-box');
+                box.innerHTML = "<span class='text-rose-400'>Gagal terhubung dengan Gemini AI. Silakan coba lagi.</span>";
+                box.classList.remove('hidden');
+            } finally {
+                document.getElementById('ai-loading').classList.add('hidden');
+            }
+        }
+
+        function toggleHistoryModal() {
+            let modal = document.getElementById('history-modal');
+            modal.classList.toggle('hidden');
+            if(!modal.classList.contains('hidden')) {
+                let list = document.getElementById('history-modal-list');
+                if(calcHistory.length === 0) {
+                    list.innerHTML = "<p class='text-stone-500 py-4 text-center'>Belum ada riwayat perhitungan.</p>";
+                } else {
+                    list.innerHTML = calcHistory.map(item => `
+                        <div class="p-2 bg-stone-900 rounded border border-stone-800 flex justify-between items-center">
+                            <div>
+                                <div class="text-stone-400 text-xs">${item.expr} =</div>
+                                <div class="text-orange-400 font-bold">${item.res}</div>
+                            </div>
+                            <span class="text-[10px] text-stone-500">${item.date}</span>
+                        </div>
+                    `).join('');
+                }
+            }
+        }
+
+        function clearHistory() {
+            calcHistory = [];
+            toggleHistoryModal();
+        }
+    </script>
+</body>
+</html>
